@@ -1,3 +1,3 @@
 """
-Agents module - Contains AI agents for clothing search and filtering
+Data models for the clothing search agent
 """
