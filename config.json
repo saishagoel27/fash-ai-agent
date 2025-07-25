@@ -1,0 +1,79 @@
+{
+  "agent": {
+    "name": "ClothingSearchAgent",
+    "version": "1.0.0",
+    "description": "AI-powered clothing search and recommendation agent"
+  },
+  "search": {
+    "max_results_per_site": 50,
+    "max_total_results": 200,
+    "search_timeout": 30,
+    "concurrent_searches": 5
+  },
+  "scraping": {
+    "request_delay": 1.0,
+    "max_retries": 3,
+    "timeout": 30,
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "respect_robots_txt": true
+  },
+  "ai": {
+    "model": "gpt-3.5-turbo",
+    "temperature": 0.7,
+    "max_tokens": 1000,
+    "fallback_model": "gpt-3.5-turbo-instruct"
+  },
+  "sites": {
+    "enabled": ["amazon", "ebay", "etsy", "asos"],
+    "amazon": {
+      "base_url": "https://www.amazon.com",
+      "search_endpoint": "/s",
+      "rate_limit": 1.5
+    },
+    "ebay": {
+      "base_url": "https://www.ebay.com",
+      "search_endpoint": "/sch/i.html",
+      "rate_limit": 1.0
+    },
+    "etsy": {
+      "base_url": "https://www.etsy.com",
+      "search_endpoint": "/search",
+      "rate_limit": 1.0
+    },
+    "asos": {
+      "base_url": "https://www.asos.com",
+      "search_endpoint": "/search",
+      "rate_limit": 1.5
+    }
+  },
+  "filters": {
+    "price_ranges": {
+      "budget": [0, 50],
+      "moderate": [50, 150],
+      "premium": [150, 500],
+      "luxury": [500, 999999]
+    },
+    "sizes": ["XS", "S", "M", "L", "XL", "XXL"],
+    "colors": ["black", "white", "blue", "red", "green", "yellow", "pink", "purple", "brown", "gray", "navy", "beige"],
+    "categories": ["tops", "bottoms", "dresses", "outerwear", "shoes", "accessories", "activewear", "swimwear", "undergarments"]
+  },
+  "notifications": {
+    "price_drop_threshold": 0.2,
+    "new_items_alert": true,
+    "daily_summary": true,
+    "email_enabled": true
+  },
+  "storage": {
+    "cache_expiry_hours": 24,
+    "max_cache_size_mb": 100,
+    "backup_frequency_days": 7,
+    "cleanup_old_data_days": 30
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "file_rotation": "daily",
+    "max_file_size_mb": 10,
+    "backup_count": 7
+  }
+}
