@@ -1,15 +1,28 @@
-# Clothing Search Agent
+# Fash AI Agent - Social Media Fashion Trends Integration
 
-An intelligent AI-powered agent that searches for clothing items across multiple e-commerce platforms, helping users find the best deals and options based on their preferences.
+An intelligent AI-powered agent that searches for clothing items across multiple e-commerce platforms and social media sources, providing personalized fashion recommendations with trend-driven insights from Pinterest and Instagram.
+
+## 🌟 New Features (Issue #10)
+
+- **Social Media Integration**: Real-time fashion trends from Pinterest and Instagram
+- **Personalized Recommendation Loop**: AI learns from user feedback (likes, dislikes, saves)
+- **Trend Analysis**: Seasonal trends, brand popularity, and fashion inspiration
+- **User Feedback System**: Interactive feedback collection and preference learning
+- **Enhanced Search**: Combines e-commerce results with social media content
+- **Web Interface**: Beautiful UI for exploring trends and providing feedback
 
 ## Features
 
-- **Multi-Platform Search**: Searches across Amazon, eBay, Etsy, ASOS, and more
+- **Multi-Platform Search**: Searches across Amazon, eBay, Etsy, ASOS, Pinterest, and Instagram
+- **Social Media Trends**: Real-time fashion content from Pinterest and Instagram
 - **AI-Powered Filtering**: Uses OpenAI to understand natural language queries
+- **Personalized Recommendations**: Learns from user interactions and preferences
+- **User Feedback Loop**: Like, dislike, and save items to improve recommendations
+- **Trend Analysis**: Discover seasonal trends and fashion inspiration
 - **Price Tracking**: Monitors price changes and sends alerts
-- **Preference Learning**: Learns user preferences over time
 - **Smart Notifications**: Email alerts for price drops and new matches
-- **Data Persistence**: Stores search history and preferences
+- **Data Persistence**: Stores search history, preferences, and feedback
+- **Web Interface**: Modern UI for exploring fashion trends and providing feedback
 
 ## Installation
 
@@ -66,31 +79,104 @@ filtered_results = agent.filter_results(results, preferences)
 
 ```bash
 # Run the agent with default settings
-python scripts/run_agent.py
+python main.py
 
 # Search for specific items
-python scripts/run_agent.py --query "red summer dress size M"
+python main.py --query "red summer dress size M"
+
+# Enhanced search with social media trends
+python main.py --query "summer dress" --social-media
+
+# Get trending fashion content
+python main.py --trending
+
+# Get fashion inspiration
+python main.py --inspiration "vintage,bohemian,minimalist"
+
+# Get seasonal trends
+python main.py --season summer
 
 # Set up user preferences
-python src/main.py --setup-preferences
+python main.py --setup-preferences
+
+# Use personalized recommendations
+python main.py --query "jeans" --user-session "your-session-id"
+```
+
+### Web Interface
+
+```bash
+# Start the web interface
+python web_interface.py
+
+# Access the interface at http://localhost:5000
+```
+
+### Interactive Mode
+
+```bash
+python main.py
+
+# Available commands:
+# - Type any clothing search query
+# - 'trending' - Get trending fashion content
+# - 'inspiration: [keywords]' - Get fashion inspiration
+# - 'help' - Show help
+# - 'quit' - Exit
 ```
 
 ## Project Structure
 
 ```
-clothing-search-agent/
-├── src/                     # Main source code
-│   ├── agents/             # AI agents
-│   ├── scrapers/           # Web scrapers
-│   ├── models/             # Data models
-│   ├── services/           # Services (notifications, storage)
-│   └── utils/              # Utilities
-├── data/                   # Data storage
-├── tests/                  # Test files
-├── docs/                   # Documentation
-├── notebooks/              # Jupyter notebooks
-└── scripts/                # Utility scripts
+fash-ai-agent/
+├── main.py                 # Main entry point
+├── clothing_agent.py       # Main clothing search agent
+├── clothing_item.py        # Clothing item data model
+├── preferences.py          # User preferences model
+├── filter_agent.py         # Filtering and ranking agent
+├── base_agent.py           # Base agent class
+├── settings.py             # Settings and configuration
+├── config.json             # Configuration file
+├── requirements.txt        # Python dependencies
+├── web_interface.py        # Flask web interface
+├── templates/              # HTML templates
+│   └── index.html          # Main web interface
+├── pinterest_scraper.py    # Pinterest fashion scraper
+├── instagram_scraper.py    # Instagram fashion scraper
+├── social_media_manager.py # Social media trends manager
+├── user_feedback.py        # User feedback system
+├── README.md               # Project documentation
+├── LICENSE                 # License file
+└── user_feedback.db        # User feedback database (created automatically)
 ```
+
+## Social Media Integration
+
+### Pinterest Integration
+- **Trending Fashion**: Get real-time fashion trends from Pinterest
+- **Style Inspiration**: Search for fashion inspiration based on keywords
+- **User Feeds**: Access fashion content from specific Pinterest users
+- **Hashtag Search**: Find content by fashion-related hashtags
+
+### Instagram Integration
+- **Fashion Hashtags**: Search popular fashion hashtags (#fashion, #style, #ootd)
+- **Influencer Content**: Get fashion content from popular influencers
+- **Brand Trends**: Discover trending content for specific brands
+- **Seasonal Trends**: Find seasonal fashion content
+
+### User Feedback System
+- **Like/Dislike**: Rate items to improve recommendations
+- **Save Items**: Bookmark items for later reference
+- **View Tracking**: Automatic tracking of viewed items
+- **Preference Learning**: AI learns from user interactions
+- **Personalized Scores**: Items ranked based on user preferences
+
+### Enhanced Search Features
+- **Combined Results**: E-commerce + social media content
+- **Trending Integration**: Include trending content in searches
+- **Personalized Ranking**: Results ranked by user preferences
+- **Seasonal Trends**: Get seasonal fashion recommendations
+- **Brand Analysis**: Discover trending brands and styles
 
 ## API Documentation
 

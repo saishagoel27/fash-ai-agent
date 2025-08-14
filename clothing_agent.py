@@ -20,8 +20,12 @@ from ..scrapers.amazon_scraper import AmazonScraper
 from ..scrapers.ebay_scraper import EbayScraper
 from ..scrapers.etsy_scraper import EtsyScraper
 from ..scrapers.asos_scraper import AsosScraper
+from ..scrapers.pinterest_scraper import PinterestScraper
+from ..scrapers.instagram_scraper import InstagramScraper
 from ..services.storage_service import StorageService
 from ..services.notification_service import NotificationService
+from ..services.social_media_manager import SocialMediaManager
+from ..services.user_feedback import FeedbackManager
 from ..utils.helpers import extract_search_terms, format_price
 
 
@@ -44,6 +48,12 @@ class ClothingAgent(BaseAgent):
         self.storage_service = StorageService(self.settings)
         self.notification_service = NotificationService(self.settings)
         
+        # Initialize feedback system
+        self.feedback_manager = FeedbackManager()
+        
+        # Initialize social media manager
+        self.social_media_manager = SocialMediaManager(self.settings, self.feedback_manager)
+        
         # Initialize scrapers
         self.scrapers = self._initialize_scrapers()
         
@@ -65,6 +75,10 @@ class ClothingAgent(BaseAgent):
                     scrapers[site] = EtsyScraper(self.settings)
                 elif site == "asos":
                     scrapers[site] = AsosScraper(self.settings)
+                elif site == "pinterest":
+                    scrapers[site] = PinterestScraper(self.settings)
+                elif site == "instagram":
+                    scrapers[site] = InstagramScraper(self.settings)
                 
                 self.log_info(f"Initialized {site} scraper")
             except Exception as e:
@@ -323,12 +337,245 @@ class ClothingAgent(BaseAgent):
         """Implementation of base agent process method"""
         return await self.search(query, kwargs.get('filters'))
     
+    async def search_with_social_media(self, query: str, user_session_id: Optional[str] = None, 
+                                     include_trends: bool = True, max_results: int = 50) -> List[ClothingItem]:
+        """
+        Enhanced search that includes social media trends and personalized recommendations
+        
+        Args:
+            query: Search query
+            user_session_id: Optional user session ID for personalization
+            include_trends: Whether to include trending social media content
+            max_results: Maximum number of results
+            
+        Returns:
+            List of clothing items including social media content
+        """
+        try:
+            # Get traditional e-commerce results
+            ecommerce_results = await self.search(query, max_results=max_results // 2)
+            
+            # Get social media content
+            social_results = []
+            if include_trends:
+                try:
+                    social_results = await self.social_media_manager.search_social_media(
+                        query, max_results // 2
+                    )
+                except Exception as e:
+                    self.log_error(f"Error getting social media results: {e}")
+            
+            # Combine results
+            all_results = ecommerce_results + social_results
+            
+            # Apply personalized ranking if user session provided
+            if user_session_id:
+                all_results = self.feedback_manager.rank_items_by_preference(
+                    all_results, user_session_id
+                )
+            else:
+                # Sort by relevance score
+                all_results = sorted(all_results, key=lambda x: x.relevance_score or 0, reverse=True)
+            
+            # Record views for feedback
+            if user_session_id:
+                for item in all_results[:10]:  # Record views for top 10 items
+                    self.feedback_manager.record_view(item, user_session_id, query)
+            
+            return all_results[:max_results]
+            
+        except Exception as e:
+            self.log_error(f"Enhanced search failed: {e}")
+            return await self.search(query, max_results=max_results)
+    
+    async def get_trending_fashion(self, user_session_id: Optional[str] = None, 
+                                 max_results: int = 30) -> List[ClothingItem]:
+        """
+        Get trending fashion content from social media
+        
+        Args:
+            user_session_id: Optional user session ID for personalization
+            max_results: Maximum number of results
+            
+        Returns:
+            List of trending clothing items
+        """
+        try:
+            if user_session_id:
+                return await self.social_media_manager.get_personalized_trends(
+                    user_session_id, max_results
+                )
+            else:
+                return await self.social_media_manager.get_trending_fashion(max_results)
+                
+        except Exception as e:
+            self.log_error(f"Error getting trending fashion: {e}")
+            return []
+    
+    async def get_fashion_inspiration(self, style_keywords: List[str], 
+                                    user_session_id: Optional[str] = None,
+                                    max_results: int = 20) -> List[ClothingItem]:
+        """
+        Get fashion inspiration based on style keywords
+        
+        Args:
+            style_keywords: List of style-related keywords
+            user_session_id: Optional user session ID for personalization
+            max_results: Maximum number of results
+            
+        Returns:
+            List of inspirational clothing items
+        """
+        try:
+            items = await self.social_media_manager.get_fashion_inspiration(
+                style_keywords, max_results
+            )
+            
+            # Apply personalized ranking if user session provided
+            if user_session_id:
+                items = self.feedback_manager.rank_items_by_preference(items, user_session_id)
+                
+                # Record views for feedback
+                for item in items[:10]:
+                    self.feedback_manager.record_view(item, user_session_id, "inspiration")
+            
+            return items
+            
+        except Exception as e:
+            self.log_error(f"Error getting fashion inspiration: {e}")
+            return []
+    
+    async def get_seasonal_trends(self, season: str, user_session_id: Optional[str] = None,
+                                max_results: int = 25) -> List[ClothingItem]:
+        """
+        Get seasonal fashion trends
+        
+        Args:
+            season: Season (spring, summer, fall, winter)
+            user_session_id: Optional user session ID for personalization
+            max_results: Maximum number of results
+            
+        Returns:
+            List of seasonal trending items
+        """
+        try:
+            items = await self.social_media_manager.get_seasonal_trends(season, max_results)
+            
+            # Apply personalized ranking if user session provided
+            if user_session_id:
+                items = self.feedback_manager.rank_items_by_preference(items, user_session_id)
+                
+                # Record views for feedback
+                for item in items[:10]:
+                    self.feedback_manager.record_view(item, user_session_id, f"{season} trends")
+            
+            return items
+            
+        except Exception as e:
+            self.log_error(f"Error getting seasonal trends: {e}")
+            return []
+    
+    # User feedback methods
+    def record_user_feedback(self, item: ClothingItem, feedback_type: str, 
+                           user_session_id: Optional[str] = None, search_query: Optional[str] = None):
+        """
+        Record user feedback on an item
+        
+        Args:
+            item: Clothing item
+            feedback_type: Type of feedback ('like', 'dislike', 'save', 'view')
+            user_session_id: Optional user session ID
+            search_query: Optional search query context
+        """
+        try:
+            if feedback_type == 'like':
+                self.feedback_manager.record_like(item, user_session_id, search_query)
+            elif feedback_type == 'dislike':
+                self.feedback_manager.record_dislike(item, user_session_id, search_query)
+            elif feedback_type == 'save':
+                self.feedback_manager.record_save(item, user_session_id, search_query)
+            elif feedback_type == 'view':
+                self.feedback_manager.record_view(item, user_session_id, search_query)
+            
+            self.log_info(f"Recorded {feedback_type} feedback for item: {item.title}")
+            
+        except Exception as e:
+            self.log_error(f"Error recording feedback: {e}")
+    
+    def get_user_preferences_summary(self, user_session_id: str) -> Dict[str, Any]:
+        """
+        Get a summary of user preferences based on feedback history
+        
+        Args:
+            user_session_id: User session ID
+            
+        Returns:
+            Dictionary with preference summary
+        """
+        try:
+            preferences = self.feedback_manager.get_user_preferences(user_session_id)
+            
+            # Get trending items
+            trending_items = self.feedback_manager.get_trending_items()
+            
+            return {
+                'preferences': preferences,
+                'trending_items': trending_items[:5],  # Top 5 trending items
+                'total_feedback_count': sum(preferences.get('feedback_patterns', {}).values())
+            }
+            
+        except Exception as e:
+            self.log_error(f"Error getting user preferences summary: {e}")
+            return {}
+    
+    def get_recommendations(self, user_session_id: str, max_results: int = 20) -> List[ClothingItem]:
+        """
+        Get personalized recommendations based on user feedback history
+        
+        Args:
+            user_session_id: User session ID
+            max_results: Maximum number of recommendations
+            
+        Returns:
+            List of recommended clothing items
+        """
+        try:
+            # Get trending items and apply personalization
+            trending_items = self.feedback_manager.get_trending_items()
+            
+            # Convert trending items to ClothingItem objects
+            recommended_items = []
+            for trending_item in trending_items[:max_results * 2]:
+                item = ClothingItem(
+                    title=trending_item['title'],
+                    url=trending_item['url'],
+                    site=trending_item['site'],
+                    relevance_score=trending_item['trending_score'] / 100,  # Normalize score
+                    raw_data=trending_item
+                )
+                recommended_items.append(item)
+            
+            # Apply personalized ranking
+            personalized_items = self.feedback_manager.rank_items_by_preference(
+                recommended_items, user_session_id
+            )
+            
+            return personalized_items[:max_results]
+            
+        except Exception as e:
+            self.log_error(f"Error getting recommendations: {e}")
+            return []
+    
     async def cleanup(self) -> None:
         """Cleanup resources"""
         # Close scrapers
         for scraper in self.scrapers.values():
             if hasattr(scraper, 'cleanup'):
                 await scraper.cleanup()
+        
+        # Close social media manager
+        if hasattr(self.social_media_manager, 'close'):
+            await self.social_media_manager.close()
         
         # Close services
         if hasattr(self.storage_service, 'cleanup'):

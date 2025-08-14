@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fash AI Agent - Social Media Fashion Trends</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 0;
+        }
+        .feature-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        .item-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .item-card:hover {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .feedback-btn {
+            border-radius: 20px;
+            padding: 5px 15px;
+            font-size: 0.9em;
+        }
+        .social-media-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+        }
+        .preference-score {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+        }
+        .loading {
+            display: none;
+        }
+        .trending-section {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            padding: 40px 0;
+        }
+        .inspiration-section {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 40px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold mb-4">
+                        <i class="fas fa-tshirt me-3"></i>
+                        Fash AI Agent
+                    </h1>
+                    <p class="lead mb-4">
+                        Discover fashion trends from Pinterest & Instagram with personalized AI recommendations
+                    </p>
+                    <div class="d-flex gap-3">
+                        <button class="btn btn-light btn-lg" onclick="showTrending()">
+                            <i class="fas fa-fire me-2"></i>Trending Now
+                        </button>
+                        <button class="btn btn-outline-light btn-lg" onclick="showInspiration()">
+                            <i class="fas fa-lightbulb me-2"></i>Get Inspiration
+                        </button>
+                    </div>
+                </div>
+                <div class="col-lg-4 text-center">
+                    <i class="fas fa-robot" style="font-size: 8rem; opacity: 0.8;"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Search Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card feature-card">
+                        <div class="card-body p-4">
+                            <h3 class="card-title text-center mb-4">
+                                <i class="fas fa-search me-2"></i>Smart Fashion Search
+                            </h3>
+                            <form id="searchForm">
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control form-control-lg" 
+                                           id="searchQuery" placeholder="Search for clothing, styles, or trends...">
+                                    <button class="btn btn-primary btn-lg" type="submit">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="includeSocialMedia" checked>
+                                    <label class="form-check-label" for="includeSocialMedia">
+                                        <i class="fab fa-pinterest me-1"></i>
+                                        <i class="fab fa-instagram me-1"></i>
+                                        Include social media trends
+                                    </label>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section id="resultsSection" class="py-5" style="display: none;">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h3 class="mb-4">
+                        <i class="fas fa-list me-2"></i>Search Results
+                        <span id="resultsCount" class="badge bg-primary ms-2">0</span>
+                    </h3>
+                    <div class="loading text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3">Searching fashion trends...</p>
+                    </div>
+                    <div id="resultsContainer" class="row g-4"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trending Section -->
+    <section id="trendingSection" class="trending-section" style="display: none;">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h3 class="text-center mb-4">
+                        <i class="fas fa-fire me-2"></i>🔥 Trending Fashion
+                    </h3>
+                    <div class="loading text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3">Loading trending content...</p>
+                    </div>
+                    <div id="trendingContainer" class="row g-4"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Inspiration Section -->
+    <section id="inspirationSection" class="inspiration-section" style="display: none;">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h3 class="text-center mb-4">
+                        <i class="fas fa-lightbulb me-2"></i>💡 Fashion Inspiration
+                    </h3>
+                    <div class="row justify-content-center mb-4">
+                        <div class="col-lg-6">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="inspirationKeywords" 
+                                       placeholder="Enter style keywords (e.g., vintage, bohemian, minimalist)">
+                                <button class="btn btn-primary" onclick="getInspiration()">
+                                    <i class="fas fa-magic me-1"></i>Get Inspiration
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="loading text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3">Finding inspiration...</p>
+                    </div>
+                    <div id="inspirationContainer" class="row g-4"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center mb-5">
+                    <h2>🌟 Enhanced Features</h2>
+                    <p class="lead">Powered by social media integration and AI personalization</p>
+                </div>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-share-alt fa-3x text-primary mb-3"></i>
+                            <h5 class="card-title">Social Media Integration</h5>
+                            <p class="card-text">
+                                Get real-time fashion trends from Pinterest and Instagram, 
+                                combined with traditional e-commerce results.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-brain fa-3x text-success mb-3"></i>
+                            <h5 class="card-title">AI Personalization</h5>
+                            <p class="card-text">
+                                Learn from your likes, dislikes, and saves to provide 
+                                increasingly personalized recommendations.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card feature-card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-chart-line fa-3x text-warning mb-3"></i>
+                            <h5 class="card-title">Trend Analysis</h5>
+                            <p class="card-text">
+                                Discover seasonal trends, brand popularity, and 
+                                fashion inspiration based on current styles.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4">
+        <div class="container text-center">
+            <p>&copy; 2024 Fash AI Agent. Enhanced with social media trends and personalized recommendations.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global variables
+        let currentSearchQuery = '';
+
+        // Search functionality
+        document.getElementById('searchForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const query = document.getElementById('searchQuery').value.trim();
+            const includeSocialMedia = document.getElementById('includeSocialMedia').checked;
+            
+            if (!query) return;
+            
+            currentSearchQuery = query;
+            await performSearch(query, includeSocialMedia);
+        });
+
+        async function performSearch(query, includeSocialMedia) {
+            showLoading('resultsSection');
+            showSection('resultsSection');
+            
+            try {
+                const response = await fetch('/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        include_social_media: includeSocialMedia
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayResults(data.results, 'resultsContainer');
+                    document.getElementById('resultsCount').textContent = data.count;
+                } else {
+                    showError('Search failed: ' + data.error);
+                }
+            } catch (error) {
+                showError('Search failed: ' + error.message);
+            }
+            
+            hideLoading('resultsSection');
+        }
+
+        // Trending functionality
+        async function showTrending() {
+            showLoading('trendingSection');
+            showSection('trendingSection');
+            
+            try {
+                const response = await fetch('/trending');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayResults(data.results, 'trendingContainer');
+                } else {
+                    showError('Failed to load trending content: ' + data.error);
+                }
+            } catch (error) {
+                showError('Failed to load trending content: ' + error.message);
+            }
+            
+            hideLoading('trendingSection');
+        }
+
+        // Inspiration functionality
+        async function getInspiration() {
+            const keywords = document.getElementById('inspirationKeywords').value.trim();
+            if (!keywords) return;
+            
+            showLoading('inspirationSection');
+            showSection('inspirationSection');
+            
+            try {
+                const response = await fetch('/inspiration', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        keywords: keywords.split(',').map(k => k.trim())
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayResults(data.results, 'inspirationContainer');
+                } else {
+                    showError('Failed to get inspiration: ' + data.error);
+                }
+            } catch (error) {
+                showError('Failed to get inspiration: ' + error.message);
+            }
+            
+            hideLoading('inspirationSection');
+        }
+
+        function showInspiration() {
+            showSection('inspirationSection');
+        }
+
+        // Display results
+        function displayResults(items, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            items.forEach(item => {
+                const card = createItemCard(item);
+                container.appendChild(card);
+            });
+        }
+
+        function createItemCard(item) {
+            const col = document.createElement('div');
+            col.className = 'col-lg-4 col-md-6';
+            
+            const card = document.createElement('div');
+            card.className = 'card item-card h-100';
+            
+            let imageHtml = '';
+            if (item.image_url) {
+                imageHtml = `<img src="${item.image_url}" class="card-img-top" alt="${item.title}" style="height: 200px; object-fit: cover;">`;
+            }
+            
+            const socialMediaBadge = item.site === 'pinterest' || item.site === 'instagram' 
+                ? `<span class="social-media-badge">
+                     <i class="fab fa-${item.site === 'pinterest' ? 'pinterest' : 'instagram'}"></i>
+                     ${item.site}
+                   </span>` : '';
+            
+            const preferenceScore = item.preference_score 
+                ? `<span class="preference-score ms-2">
+                     <i class="fas fa-star"></i> ${(item.preference_score * 100).toFixed(0)}%
+                   </span>` : '';
+            
+            const priceHtml = item.price 
+                ? `<div class="text-success fw-bold">$${item.price}</div>` : '';
+            
+            card.innerHTML = `
+                <div class="position-relative">
+                    ${imageHtml}
+                    ${socialMediaBadge}
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <h6 class="card-title">${item.title}</h6>
+                    <p class="card-text text-muted small">${item.description || ''}</p>
+                    <div class="mt-auto">
+                        ${priceHtml}
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <small class="text-muted">${item.site}</small>
+                            ${preferenceScore}
+                        </div>
+                        <div class="d-flex gap-2 mt-3">
+                            <button class="btn btn-outline-primary btn-sm feedback-btn" 
+                                    onclick="recordFeedback('${item.title}', 'like', '${item.site}')">
+                                <i class="fas fa-thumbs-up"></i> Like
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm feedback-btn" 
+                                    onclick="recordFeedback('${item.title}', 'save', '${item.site}')">
+                                <i class="fas fa-bookmark"></i> Save
+                            </button>
+                            <a href="${item.url}" target="_blank" class="btn btn-primary btn-sm feedback-btn">
+                                <i class="fas fa-external-link-alt"></i> View
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            col.appendChild(card);
+            return col;
+        }
+
+        // Feedback functionality
+        async function recordFeedback(itemTitle, feedbackType, site) {
+            try {
+                const response = await fetch('/feedback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        item: {
+                            title: itemTitle,
+                            site: site
+                        },
+                        feedback_type: feedbackType,
+                        search_query: currentSearchQuery
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess(`Feedback recorded: ${feedbackType}`);
+                } else {
+                    showError('Failed to record feedback: ' + data.error);
+                }
+            } catch (error) {
+                showError('Failed to record feedback: ' + error.message);
+            }
+        }
+
+        // Utility functions
+        function showSection(sectionId) {
+            document.querySelectorAll('section[id$="Section"]').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(sectionId).style.display = 'block';
+        }
+
+        function showLoading(sectionId) {
+            const section = document.getElementById(sectionId);
+            section.querySelector('.loading').style.display = 'block';
+            section.querySelector('.row').style.display = 'none';
+        }
+
+        function hideLoading(sectionId) {
+            const section = document.getElementById(sectionId);
+            section.querySelector('.loading').style.display = 'none';
+            section.querySelector('.row').style.display = 'flex';
+        }
+
+        function showSuccess(message) {
+            // Simple success notification
+            alert('Success: ' + message);
+        }
+
+        function showError(message) {
+            // Simple error notification
+            alert('Error: ' + message);
+        }
+    </script>
+</body>
+</html>
