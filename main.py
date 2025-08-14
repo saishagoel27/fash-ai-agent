@@ -129,3 +129,66 @@ Examples:
 
 if __name__ == "__main__":
     asyncio.run(main())
+from flask import Flask, render_template_string
+
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return render_template_string("""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Scroll to Top</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                height: 2000px;
+                margin: 0;
+                padding: 0;
+                background: #f9f9f9;
+            }
+            #topBtn {
+                position: fixed;
+                bottom: 30px;
+                right: 30px;
+                z-index: 1000;
+                background-color: #007BFF;
+                color: white;
+                border: none;
+                padding: 12px 18px;
+                border-radius: 50px;
+                cursor: pointer;
+                font-size: 18px;
+                display: none;
+                transition: opacity 0.3s ease;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            }
+            #topBtn:hover {
+                background-color: #0056b3;
+            }
+        </style>
+    </head>
+    <body>
+
+        <button id="topBtn" onclick="scrollToTop()">↑ Top</button>
+
+        <script>
+            const topBtn = document.getElementById("topBtn");
+
+            window.addEventListener("scroll", () => {
+                topBtn.style.display = (window.scrollY > 100) ? "block" : "none";
+            });
+
+            function scrollToTop() {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        </script>
+
+    </body>
+    </html>
+    """)
+
+if __name__ == '__main__':
+    app.run(debug=True)
