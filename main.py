@@ -14,6 +14,7 @@ sys.path.append(str(Path(__file__).parent))
 from agents.clothing_agent import ClothingAgent
 from config.settings import Settings
 from utils.helpers import setup_logging
+from logger import logger
 
 
 async def main():
@@ -46,7 +47,8 @@ async def main():
     # Initialize settings and logging
     settings = Settings()
     setup_logging(settings.log_level, settings.log_file)
-    
+    logger.info("🚀 Application started")
+
     # Initialize the agent
     agent = ClothingAgent(config_path=args.config)
     
@@ -54,16 +56,15 @@ async def main():
         if args.setup_preferences:
             # Interactive preference setup
             await agent.setup_user_preferences()
-            print("✅ User preferences have been set up successfully!")
+            logger.info("✅ User preferences have been set up successfully")
             return
         
         if args.query:
-            # Perform search
-            print(f"🔍 Searching for: {args.query}")
+            logger.info(f"🔍 Searching for query: {args.query}")
             results = await agent.search(args.query)
             
             if results:
-                print(f"✅ Found {len(results)} items:")
+                logger.info(f"✅ Found {len(results)} items for query '{args.query}'")
                 for i, item in enumerate(results[:10], 1):  # Show top 10
                     print(f"{i}. {item.title}")
                     print(f"   Price: ${item.price}")
@@ -73,19 +74,21 @@ async def main():
                 
                 if args.output:
                     await agent.save_results(results, args.output)
-                    print(f"💾 Results saved to {args.output}")
+                    logger.info(f"💾 Results saved to {args.output}")
             else:
-                print("❌ No items found matching your criteria")
+                logger.warning(f"No items found for query: {args.query}")
         else:
             # Interactive mode
             print("👋 Welcome to Clothing Search Agent!")
             print("Type 'help' for commands or 'quit' to exit")
+            logger.info("Running in interactive mode")
             
             while True:
                 try:
                     query = input("\n🔍 Enter search query: ").strip()
                     
                     if query.lower() in ['quit', 'exit', 'q']:
+                        logger.info("User exited application")
                         break
                     elif query.lower() == 'help':
                         print_help()
@@ -96,19 +99,21 @@ async def main():
                             print(f"✅ Found {len(results)} items (showing top 5):")
                             for i, item in enumerate(results[:5], 1):
                                 print(f"{i}. {item.title} - ${item.price} ({item.site})")
+                            logger.debug(f"Displayed top {min(5, len(results))} results for query '{query}'")
                         else:
-                            print("❌ No items found")
+                            logger.warning(f"No results for query: {query}")
                 
                 except KeyboardInterrupt:
+                    logger.info("Keyboard interrupt - shutting down gracefully")
                     break
                 except Exception as e:
-                    print(f"❌ Error: {e}")
+                    logger.error(f"Error in interactive loop: {e}", exc_info=True)
     
     except Exception as e:
-        print(f"❌ Failed to run agent: {e}")
+        logger.critical(f"❌ Failed to run agent: {e}", exc_info=True)
         sys.exit(1)
     
-    print("👋 Thanks for using Clothing Search Agent!")
+    logger.info("👋 Application finished successfully")
 
 
 def print_help():
