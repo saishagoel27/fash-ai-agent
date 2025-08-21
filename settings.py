@@ -105,14 +105,20 @@ class Settings(BaseSettings):
             self.load_config(config_path)
     
     def load_config(self, config_path: str) -> None:
-        """Load configuration from JSON file"""
-        try:
-            config_file = Path(config_path)
-            if config_file.exists():
-                with open(config_file, 'r') as f:
-                    self._config_data = json.load(f)
-        except Exception as e:
-            print(f"Warning: Could not load config file {config_path}: {e}")
+     """Load configuration from JSON file"""
+    from logger import logger  # import logger from logger.py
+    
+    try:
+        config_file = Path(config_path)
+        if config_file.exists():
+            with open(config_file, 'r') as f:
+                self._config_data = json.load(f)
+            logger.info(f"Loaded config file successfully: {config_path}")
+        else:
+            logger.warning(f"Config file not found: {config_path}")
+    except Exception as e:
+        logger.error(f"Could not load config file {config_path}: {e}", exc_info=True)
+
     
     @property
     def ai(self) -> AISettings:
