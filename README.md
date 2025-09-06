@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎯 Fash AI Agent
+#  Fash AI Agent
 ### *Intelligent Fashion Discovery with Social Media Trends*
 
 <p align="center">
